@@ -24,7 +24,7 @@ struct Repository: Decodable, Equatable {
         case language
         case stargazersCount = "stargazers_count"
         case openIssuesCount = "open_issues_count"
-        case updatedAt = "update_at"
+        case updatedAt = "updated_at"
     }
 }
 
@@ -56,7 +56,7 @@ struct ContentView: View {
             Divider()
 
             LabeledContent("Language", value: repository.language ?? "Unknown")
-            LabeledContent("Starts", value: "\(repository.stargazersCount)")
+            LabeledContent("Stars", value: "\(repository.stargazersCount)")
             LabeledContent("Open issues", value: "\(repository.openIssuesCount)")
             LabeledContent("Updated", value: repository.updatedAt)
         }
