@@ -4,6 +4,7 @@ enum GitHubClientError: LocalizedError {
     case invalidURL
     case invalidResponse
     case httpStatus(Int)
+    case noCommits
 
     var errorDescription: String? {
         switch self {
@@ -13,13 +14,43 @@ enum GitHubClientError: LocalizedError {
             return "GitHub returned an invalid HTTP response."
         case .httpStatus(let statusCode):
             return "GitHub returned HTTP \(statusCode)."
+        case .noCommits:
+            return "This repository has no commits."
         }
     }
 }
 
 struct GitHubClient {
     static func fetchRepository(owner: String, name: String) async throws -> Repository {
-        guard let url = URL(string: "https://api.github.com/repos/\(owner)/\(name)") else {
+        let data = try await fetchData(
+            from: "https://api.github.com/repos/\(owner)/\(name)"
+        )
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        return try decoder.decode(Repository.self, from: data)
+    }
+
+    static func fetchLatestCommit(owner: String, name: String) async throws -> GitCommit {
+        let data = try await fetchData(
+            from: "https://api.github.com/repos/\(owner)/\(name)/commits?per_page=1"
+        )
+
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        let commits = try decoder.decode([GitCommit].self, from: data)
+
+        guard let latestCommit = commits.first else {
+            throw GitHubClientError.noCommits
+        }
+
+        return latestCommit
+    }
+
+    private static func fetchData(from urlString: String) async throws -> Data {
+        guard let url = URL(string: urlString) else {
             throw GitHubClientError.invalidURL
         }
 
@@ -37,9 +68,6 @@ struct GitHubClient {
             throw GitHubClientError.httpStatus(httpResponse.statusCode)
         }
 
-        let decoder = JSONDecoder()
-        decoder.dateDecodingStrategy = .iso8601
-
-        return try decoder.decode(Repository.self, from: data)
+        return data
     }
 }

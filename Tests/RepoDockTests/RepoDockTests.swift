@@ -37,3 +37,34 @@ import Testing
     #expect(repository.defaultBranch == "main")
     #expect(repository.updatedAt == Date(timeIntervalSince1970: 1_786_953_600))
 }
+
+@Test func decodesLatestCommitFromGitHubJSON() throws {
+    let json = """
+        [
+            {
+                "sha": "e4a357be449d2e15e4303eab048f2f550d40947d",
+                "commit": {
+                    "author": {
+                        "name": "Németh Tamás",
+                        "date": "2026-08-17T10:04:02Z"
+                    },
+                    "message": "feat: implement TLS HelloRetryRequest\\n\\nMore details"
+                }
+            }
+        ]
+        """
+
+    let data = try #require(json.data(using: .utf8))
+
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+
+    let commits = try decoder.decode([GitCommit].self, from: data)
+    let commit = try #require(commits.first)
+
+    #expect(commit.sha == "e4a357be449d2e15e4303eab048f2f550d40947d")
+    #expect(commit.shortSHA == "e4a357b")
+    #expect(commit.summary == "feat: implement TLS HelloRetryRequest")
+    #expect(commit.details.author.name == "Németh Tamás")
+    #expect(commit.details.author.date == Date(timeIntervalSince1970: 1_786_961_042))
+}

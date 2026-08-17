@@ -4,6 +4,7 @@ import SwiftUI
 struct ContentView: View {
     @State private var repositoryPath = "Nemeth-Tamas/bareproxy"
     @State private var repository: Repository?
+    @State private var latestCommit: GitCommit?
     @State private var errorMessage: String?
     @State private var isLoading = true
 
@@ -35,8 +36,11 @@ struct ContentView: View {
                         Text("Fetching \(repositoryPath) from GitHub…")
                             .foregroundStyle(.secondary)
                     }
-                } else if let repository {
-                    RepositoryDetailView(repository: repository)
+                } else if let repository, let latestCommit {
+                    RepositoryDetailView(
+                        repository: repository,
+                        latestCommit: latestCommit
+                    )
                 } else if let errorMessage {
                     VStack(spacing: 12) {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -68,6 +72,7 @@ struct ContentView: View {
 
         guard parts.count == 2, !parts[0].isEmpty, !parts[1].isEmpty else {
             repository = nil
+            latestCommit = nil
             errorMessage = "Enter a repository as owner/name."
             isLoading = false
             return
@@ -84,12 +89,26 @@ struct ContentView: View {
         }
 
         do {
-            repository = try await GitHubClient.fetchRepository(
+            async let repositoryRequest = GitHubClient.fetchRepository(
                 owner: owner,
                 name: name
             )
+
+            async let commitRequest = GitHubClient.fetchLatestCommit(
+                owner: owner,
+                name: name
+            )
+
+            let (loadedRepository, loadedCommit) = try await (
+                repositoryRequest,
+                commitRequest
+            )
+
+            repository = loadedRepository
+            latestCommit = loadedCommit
         } catch {
             repository = nil
+            latestCommit = nil
             errorMessage = error.localizedDescription
         }
     }

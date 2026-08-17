@@ -2,6 +2,7 @@ import SwiftUI
 
 struct RepositoryDetailView: View {
     let repository: Repository
+    let latestCommit: GitCommit
 
     var body: some View {
         VStack(alignment: .leading, spacing: 20) {
@@ -77,6 +78,10 @@ struct RepositoryDetailView: View {
                     .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
                 }
             }
+
+            Divider()
+
+            LatestCommitView(commit: latestCommit)
         }
     }
 }
