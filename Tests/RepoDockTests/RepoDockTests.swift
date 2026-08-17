@@ -16,12 +16,16 @@ import Testing
         """
 
     let data = try #require(json.data(using: .utf8))
-    let repository = try JSONDecoder().decode(Repository.self, from: data)
+
+    let decoder = JSONDecoder()
+    decoder.dateDecodingStrategy = .iso8601
+
+    let repository = try decoder.decode(Repository.self, from: data)
 
     #expect(repository.name == "bareproxy")
     #expect(repository.description == "A reverse proxy")
     #expect(repository.language == "Rust")
     #expect(repository.stargazersCount == 7)
     #expect(repository.openIssuesCount == 2)
-    #expect(repository.updatedAt == "2026-08-17T08:00:00Z")
+    #expect(repository.updatedAt == Date(timeIntervalSince1970: 1_786_953_600))
 }

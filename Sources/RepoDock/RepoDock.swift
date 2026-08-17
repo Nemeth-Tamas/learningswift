@@ -17,7 +17,7 @@ struct Repository: Decodable, Equatable, Sendable {
     let language: String?
     let stargazersCount: Int
     let openIssuesCount: Int
-    let updatedAt: String
+    let updatedAt: Date
 
     enum CodingKeys: String, CodingKey {
         case name
@@ -66,7 +66,10 @@ struct GitHubClient {
             throw GitHubClientError.httpStatus(httpResponse.statusCode)
         }
 
-        return try JSONDecoder().decode(Repository.self, from: data)
+        let decoder = JSONDecoder()
+        decoder.dateDecodingStrategy = .iso8601
+
+        return try decoder.decode(Repository.self, from: data)
     }
 }
 
@@ -124,7 +127,17 @@ struct ContentView: View {
                         LabeledContent("Language", value: repository.language ?? "Unknown")
                         LabeledContent("Stars", value: "\(repository.stargazersCount)")
                         LabeledContent("Open issues", value: "\(repository.openIssuesCount)")
-                        LabeledContent("Updated", value: repository.updatedAt)
+                        LabeledContent("Updated") {
+                            Text(
+                                repository.updatedAt,
+                                format: .dateTime
+                                    .year()
+                                    .month()
+                                    .day()
+                                    .hour()
+                                    .minute()
+                            )
+                        }
                     }
                 } else if let errorMessage {
                     VStack(spacing: 12) {
