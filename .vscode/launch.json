@@ -1,0 +1,24 @@
+{
+    "configurations": [
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:learningswift}",
+            "name": "Debug RepoDock",
+            "target": "RepoDock",
+            "configuration": "debug",
+            "preLaunchTask": "swift: Build Debug RepoDock"
+        },
+        {
+            "type": "swift",
+            "request": "launch",
+            "args": [],
+            "cwd": "${workspaceFolder:learningswift}",
+            "name": "Release RepoDock",
+            "target": "RepoDock",
+            "configuration": "release",
+            "preLaunchTask": "swift: Build Release RepoDock"
+        }
+    ]
+}
